@@ -1,4 +1,4 @@
-Require Import List.
+Require Import List Permutation.
 Require Import Nat.
 Import ListNotations.
 
@@ -16,7 +16,9 @@ Fixpoint filter {X:Type} (test: X->bool) (l:list X) : list X :=
     else filter test t
   end.
 
+
 (*************** START ***************)
+
 
 Definition quantum : nat := 5.
 
@@ -64,7 +66,28 @@ Fixpoint rr_sched (t : nat) (l : joblist) (output : list nat) : list nat :=
       end
   end.
 
+
+(***************  END  ***************)
+
+
 Definition example_output := rr_sched (sum_burst_times example_joblist) example_joblist [].
 Compute example_output.
 
-(***************  END  ***************)
+Fixpoint perm_joblist (j : joblist) : list nat :=
+  match j with
+  | [] => []
+  | taskj id burst_time :: t1 => repeat id (burst_time/quantum) ++ perm_joblist t1
+  end.
+
+Definition perm_runorder := perm_joblist(example_joblist).
+Compute perm_runorder.
+
+(***  THEOREM TO SHOW SOUNDNESS  ***)
+Theorem rr_is_sound: forall jl : joblist,
+  Permutation (rr_sched (sum_burst_times jl) jl []) (perm_joblist jl).
+Proof.
+  intros jl.
+  (* Prove the permutation using tactics *)
+  Admitted.
+
+(*** THEOREM TO SHOW CORRECTNESS ***
